@@ -37,3 +37,69 @@ static void render_text(SDL_Renderer *renderer, TTF_Font *font, const char *text
 
     SDL_DestroySurface(text_surface);
 }
+
+static void draw_button(SDL_Renderer *renderer, TTF_Font *font, const Button *button, const char *label) {
+    Uint8 r = 35, g = 115, b = 220;
+    if (button->pressed) {
+        r = 20;
+        g = 80;
+        b = 170;
+    } else if (button->hovered) {
+        r = 90;
+        g = 160;
+        b = 245;
+    }
+
+    SDL_SetRenderDrawColor(renderer, r, g, b, 255);
+    SDL_RenderFillRect(renderer, &button->rect);
+
+    SDL_SetRenderDrawColor(renderer, 15, 45, 90, 255);
+    SDL_RenderRect(renderer, &button->rect);
+
+    SDL_Color white = {255, 255, 255, 255};
+    SDL_Surface *text_surface = TTF_RenderText_Blended(font, label, strlen(label), white);
+    if (!text_surface) {
+        return;
+    }
+
+    SDL_Texture *text_texture = SDL_CreateTextureFromSurface(renderer, text_surface);
+    if (text_texture) {
+        SDL_FRect dst = {
+            button->rect.x + (button->rect.w - (float)text_surface->w) / 2.0f,
+            button->rect.y + (button->rect.h - (float)text_surface->h) / 2.0f,
+            (float)text_surface->w,
+            (float)text_surface->h
+        };
+        SDL_RenderTexture(renderer, text_texture, NULL, &dst);
+        SDL_DestroyTexture(text_texture);
+    }
+
+    SDL_DestroySurface(text_surface);
+}
+
+static void draw_histogram(SDL_Renderer *renderer, const HistogramInfo *info) {
+    int max_count = 1;
+    for (int i = 0; i < 256; ++i) {
+        if (info->hist[i] > max_count) {
+            max_count = info->hist[i];
+        }
+    }
+
+    SDL_FRect border = {(float)HIST_MARGIN_X, (float)HIST_MARGIN_TOP, (float)HIST_PLOT_WIDTH, (float)HIST_PLOT_HEIGHT};
+    SDL_SetRenderDrawColor(renderer, 230, 230, 230, 255);
+    SDL_RenderRect(renderer, &border);
+
+    for (int i = 0; i < 256; ++i) {
+        const float bar_w = (float)HIST_PLOT_WIDTH / 256.0f;
+        const float normalized = (float)info->hist[i] / (float)max_count;
+        const float bar_h = normalized * (float)(HIST_PLOT_HEIGHT - 4);
+        SDL_FRect bar = {
+            HIST_MARGIN_X + i * bar_w,
+            HIST_MARGIN_TOP + HIST_PLOT_HEIGHT - bar_h,
+            (bar_w > 1.0f ? bar_w : 1.0f),
+            bar_h
+        };
+        SDL_SetRenderDrawColor(renderer, 120, 120, 120, 255);
+        SDL_RenderFillRect(renderer, &bar);
+    }
+}
