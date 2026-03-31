@@ -103,3 +103,25 @@ static void draw_histogram(SDL_Renderer *renderer, const HistogramInfo *info) {
         SDL_RenderFillRect(renderer, &bar);
     }
 }
+
+void initialize_button(Button *button) {
+    button->rect.x = (HIST_WINDOW_WIDTH - BUTTON_W) / 2.0f;
+    button->rect.y = 500.0f;
+    button->rect.w = (float)BUTTON_W;
+    button->rect.h = (float)BUTTON_H;
+    button->hovered = false;
+    button->pressed = false;
+}
+
+bool point_in_rect(float x, float y, SDL_FRect rect) {
+    return x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h;
+}
+
+void render_main_window(SDL_Renderer *renderer, SDL_Texture *texture, int image_w, int image_h) {
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderClear(renderer);
+
+    SDL_FRect dst = {0.0f, 0.0f, (float)image_w, (float)image_h};
+    SDL_RenderTexture(renderer, texture, NULL, &dst);
+    SDL_RenderPresent(renderer);
+}
