@@ -11,3 +11,17 @@
 #define HIST_WINDOW_HEIGHT 620
 #define BUTTON_W 180
 #define BUTTON_H 48
+
+typedef struct {
+    SDL_FRect rect;
+    bool hovered;
+    bool pressed;
+} Button;
+
+void initialize_button(Button *button);
+bool point_in_rect(float x, float y, SDL_FRect rect);
+void render_main_window(SDL_Renderer *renderer, SDL_Texture *texture, int image_w, int image_h);
+void render_histogram_window(SDL_Renderer *renderer, TTF_Font *font, const HistogramInfo *info,
+                             const Button *button, bool showing_equalized);
+
+#endif
