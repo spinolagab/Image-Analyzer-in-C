@@ -125,3 +125,34 @@ void render_main_window(SDL_Renderer *renderer, SDL_Texture *texture, int image_
     SDL_RenderTexture(renderer, texture, NULL, &dst);
     SDL_RenderPresent(renderer);
 }
+
+void render_histogram_window(SDL_Renderer *renderer, TTF_Font *font, const HistogramInfo *info,
+                             const Button *button, bool showing_equalized) {
+    SDL_SetRenderDrawColor(renderer, 248, 248, 248, 255);
+    SDL_RenderClear(renderer);
+
+    SDL_Color black = {20, 20, 20, 255};
+    SDL_Color gray = {80, 80, 80, 255};
+
+    render_text(renderer, font, "Histograma da imagem", 24.0f, 6.0f, black, 0);
+    draw_histogram(renderer, info);
+
+    char line1[128];
+    char line2[128];
+    char line3[128];
+    SDL_snprintf(line1, sizeof(line1), "Media de intensidade: %.2f (%s)", info->mean, info->brightness_label);
+    SDL_snprintf(line2, sizeof(line2), "Desvio padrao: %.2f (contraste %s)", info->stddev, info->contrast_label);
+    SDL_snprintf(line3, sizeof(line3), "Estado atual: %s", showing_equalized ? "equalizada" : "original em cinza");
+
+    render_text(renderer, font, line1, 24.0f, 275.0f, black, TEXT_WRAP_WIDTH);
+    render_text(renderer, font, line2, 24.0f, 315.0f, black, TEXT_WRAP_WIDTH);
+    render_text(renderer, font, line3, 24.0f, 355.0f, black, TEXT_WRAP_WIDTH);
+
+    render_text(renderer, font,
+                "Tecla S: salva a imagem exibida como output_image.png",
+                24.0f, 410.0f, gray, TEXT_WRAP_WIDTH);
+
+    draw_button(renderer, font, button, showing_equalized ? "Ver original" : "Equalizar");
+
+    SDL_RenderPresent(renderer);
+}
