@@ -170,3 +170,79 @@ static bool handle_event(const SDL_Event *event,
 
     return true;
 }
+
+static int run_loop(SDL_Window *hist_window,
+                    SDL_Renderer *main_renderer,
+                    SDL_Renderer *hist_renderer,
+                    TTF_Font *font,
+                    ImageState *state) {
+    Button button;
+    initialize_button(&button);
+
+    bool running = true;
+    SDL_Event event;
+
+    while (running) {
+        HistogramInfo info;
+        compute_histogram(state->current_surface, &info);
+
+        while (SDL_PollEvent(&event)) {
+            if (!handle_event(&event, hist_window, main_renderer, state, &button, &running)) {
+                return 1;
+            }
+        }
+
+        render_main_window(main_renderer, state->main_texture, state->current_surface->w, state->current_surface->h);
+        render_histogram_window(hist_renderer, font, &info, &button, state->showing_equalized);
+        SDL_Delay(16);
+    }
+
+    return 0;
+}
+
+
+int run_app(int argc, char *argv[]) {
+    if (argc != 2) {
+        SDL_Log("Uso: %s <caminho_da_imagem>", argv[0]);
+        return 1;
+    }
+
+    if (!initialize_libraries()) {
+        return 1;
+    }
+
+    TTF_Font *font = load_app_font();
+    if (!font) {
+        TTF_Quit();
+        IMG_Quit();
+        SDL_Quit();
+        return 1;
+    }
+
+    ImageState state;
+    if (!prepare_image_state(argv[1], &state)) {
+        SDL_Log("Falha ao preparar imagem '%s': %s", argv[1], SDL_GetError());
+        cleanup_everything(NULL, NULL, NULL, NULL, font, &(ImageState){0});
+        return 1;
+    }
+
+    SDL_Window *main_window = NULL;
+    SDL_Window *hist_window = NULL;
+    SDL_Renderer *main_renderer = NULL;
+    SDL_Renderer *hist_renderer = NULL;
+
+    if (!create_windows_and_renderers(&state, &main_window, &hist_window, &main_renderer, &hist_renderer)) {
+        cleanup_everything(hist_window, main_window, hist_renderer, main_renderer, font, &state);
+        return 1;
+    }
+
+    if (!update_main_texture(main_renderer, &state)) {
+        SDL_Log("Falha ao criar textura principal: %s", SDL_GetError());
+        cleanup_everything(hist_window, main_window, hist_renderer, main_renderer, font, &state);
+        return 1;
+    }
+
+    const int status = run_loop(hist_window, main_renderer, hist_renderer, font, &state);
+    cleanup_everything(hist_window, main_window, hist_renderer, main_renderer, font, &state);
+    return status;
+}
