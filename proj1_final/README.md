@@ -65,8 +65,7 @@ Funcionalidades implementadas
         Tecla S: Exporta a imagem que está sendo visualizada no momento para um arquivo chamado output_image.png.
 
 Organização do código
-Plaintext
-
+```text
 proj1_final/
 ├── CMakeLists.txt
 ├── README.md
@@ -83,7 +82,7 @@ proj1_final/
     ├── ui.h
     ├── font_utils.c
     └── font_utils.h
-
+```
 Bibliotecas utilizadas
 
     SDL3: Core da aplicação e renderização.
