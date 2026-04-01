@@ -38,3 +38,26 @@ static void cleanup_everything(SDL_Window *hist_window,
     TTF_Quit();
     SDL_Quit();
 }
+
+static bool initialize_libraries(void) {
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
+        SDL_Log("Falha ao inicializar SDL: %s", SDL_GetError());
+        return false;
+    }
+
+    const int img_flags = IMG_INIT_PNG | IMG_INIT_JPG;
+    if ((IMG_Init(img_flags) & img_flags) != img_flags) {
+        SDL_Log("Falha ao inicializar SDL_image: %s", SDL_GetError());
+        SDL_Quit();
+        return false;
+    }
+
+    if (!TTF_Init()) {
+        SDL_Log("Falha ao inicializar SDL_ttf: %s", SDL_GetError());
+        IMG_Quit();
+        SDL_Quit();
+        return false;
+    }
+
+    return true;
+}
