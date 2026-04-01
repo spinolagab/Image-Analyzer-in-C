@@ -76,3 +76,44 @@ static TTF_Font *load_app_font(void) {
 
     return font;
 }
+
+static bool create_windows_and_renderers(const ImageState *state,
+                                         SDL_Window **main_window,
+                                         SDL_Window **hist_window,
+                                         SDL_Renderer **main_renderer,
+                                         SDL_Renderer **hist_renderer) {
+    *main_window = SDL_CreateWindow(
+        "Proj1 - Imagem",
+        state->current_surface->w,
+        state->current_surface->h,
+        0
+    );
+    if (!*main_window) {
+        SDL_Log("Falha ao criar janela principal: %s", SDL_GetError());
+        return false;
+    }
+
+    SDL_SetWindowPosition(*main_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+
+    *hist_window = SDL_CreateWindow("Proj1 - Histograma", HIST_WINDOW_WIDTH, HIST_WINDOW_HEIGHT, 0);
+    if (!*hist_window) {
+        SDL_Log("Falha ao criar janela secundária: %s", SDL_GetError());
+        return false;
+    }
+
+    SDL_SetWindowParent(*hist_window, *main_window);
+
+    int main_x = 0;
+    int main_y = 0;
+    SDL_GetWindowPosition(*main_window, &main_x, &main_y);
+    SDL_SetWindowPosition(*hist_window, main_x + state->current_surface->w + 20, main_y);
+
+    *main_renderer = SDL_CreateRenderer(*main_window, NULL);
+    *hist_renderer = SDL_CreateRenderer(*hist_window, NULL);
+    if (!*main_renderer || !*hist_renderer) {
+        SDL_Log("Falha ao criar renderizadores: %s", SDL_GetError());
+        return false;
+    }
+
+    return true;
+}
