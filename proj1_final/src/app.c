@@ -61,3 +61,18 @@ static bool initialize_libraries(void) {
 
     return true;
 }
+
+static TTF_Font *load_app_font(void) {
+    const char *font_path = find_font_path();
+    if (!font_path) {
+        SDL_Log("Nenhuma fonte .ttf encontrada. Coloque uma fonte em assets/DejaVuSans.ttf ou assets/arial.ttf");
+        return NULL;
+    }
+
+    TTF_Font *font = TTF_OpenFont(font_path, 18.0f);
+    if (!font) {
+        SDL_Log("Falha ao abrir fonte '%s': %s", font_path, SDL_GetError());
+    }
+
+    return font;
+}
