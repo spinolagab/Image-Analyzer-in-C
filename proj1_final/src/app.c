@@ -117,3 +117,56 @@ static bool create_windows_and_renderers(const ImageState *state,
 
     return true;
 }
+
+static bool handle_event(const SDL_Event *event,
+                         SDL_Window *hist_window,
+                         SDL_Renderer *main_renderer,
+                         ImageState *state,
+                         Button *button,
+                         bool *running) {
+    switch (event->type) {
+        case SDL_EVENT_QUIT:
+        case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+            *running = false;
+            break;
+
+        case SDL_EVENT_MOUSE_MOTION:
+            if (event->motion.windowID == SDL_GetWindowID(hist_window)) {
+                button->hovered = point_in_rect(event->motion.x, event->motion.y, button->rect);
+            }
+            break;
+
+        case SDL_EVENT_MOUSE_BUTTON_DOWN:
+            if (event->button.windowID == SDL_GetWindowID(hist_window) && event->button.button == SDL_BUTTON_LEFT) {
+                if (point_in_rect(event->button.x, event->button.y, button->rect)) {
+                    button->pressed = true;
+                }
+            }
+            break;
+
+        case SDL_EVENT_MOUSE_BUTTON_UP:
+            if (event->button.windowID == SDL_GetWindowID(hist_window) && event->button.button == SDL_BUTTON_LEFT) {
+                const bool inside = point_in_rect(event->button.x, event->button.y, button->rect);
+                if (button->pressed && inside) {
+                    if (!toggle_equalization(main_renderer, state)) {
+                        SDL_Log("Falha ao alternar imagem: %s", SDL_GetError());
+                        return false;
+                    }
+                }
+                button->pressed = false;
+            }
+            break;
+
+        case SDL_EVENT_KEY_DOWN:
+            if (event->key.scancode == SDL_SCANCODE_S) {
+                if (!IMG_SavePNG(state->current_surface, "output_image.png")) {
+                    SDL_Log("Falha ao salvar output_image.png: %s", SDL_GetError());
+                } else {
+                    SDL_Log("Imagem salva em output_image.png");
+                }
+            }
+            break;
+    }
+
+    return true;
+}
