@@ -45,16 +45,8 @@ static bool initialize_libraries(void) {
         return false;
     }
 
-    const int img_flags = IMG_INIT_PNG | IMG_INIT_JPG;
-    if ((IMG_Init(img_flags) & img_flags) != img_flags) {
-        SDL_Log("Falha ao inicializar SDL_image: %s", SDL_GetError());
-        SDL_Quit();
-        return false;
-    }
-
     if (!TTF_Init()) {
         SDL_Log("Falha ao inicializar SDL_ttf: %s", SDL_GetError());
-        IMG_Quit();
         SDL_Quit();
         return false;
     }
@@ -200,7 +192,6 @@ static int run_loop(SDL_Window *hist_window,
     return 0;
 }
 
-
 int run_app(int argc, char *argv[]) {
     if (argc != 2) {
         SDL_Log("Uso: %s <caminho_da_imagem>", argv[0]);
@@ -214,7 +205,6 @@ int run_app(int argc, char *argv[]) {
     TTF_Font *font = load_app_font();
     if (!font) {
         TTF_Quit();
-        IMG_Quit();
         SDL_Quit();
         return 1;
     }
